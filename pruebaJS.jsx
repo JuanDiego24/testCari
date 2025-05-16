@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, CalendarDays, Plus, Trash2, RefreshCw, Download } from 'lucide-react';
+import { Clock, CalendarDays, Plus, Trash2, RefreshCw } from 'lucide-react';
 
 function classifyAttendances(concepts, attendanceIn, attendanceOut) {
   const respuesta = {};
@@ -42,30 +42,30 @@ export default function AttendanceForm() {
     { id: 2, name: 'Horas Extra', start: '17:00', end: '18:00' },
     { id: 2, name: 'Horas Extras Nocturnas', start: '18:00', end: '06:00' },
   ]);
-  const [attendanceIn, setAttendanceIn] = useState('07:30');
-  const [attendanceOut, setAttendanceOut] = useState('18:30');
+  const [attendanceIn, setIngreso] = useState('07:30');
+  const [attendanceOut, setSalida] = useState('18:30');
   const [resultados, setRespuestas] = useState({});
   const [apiData, setApiData] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
   const [notificacion, setNotificacion] = useState(null);
 
-  const addConcept = () => {
+  const agregarConcepto = () => {
     const newId = concepts.length > 0 ? Math.max(...concepts.map(c => c.id)) + 1 : 1;
     setConcepts([...concepts, { id: newId, name: `Concepto ${newId}`, start: '00:00', end: '00:00' }]);
   };
 
-  const deleteConcept = (id) => {
+  const borrarConcepto = (id) => {
     setConcepts(concepts.filter(concept => concept.id !== id));
   };
 
-  const updateConcept = (id, field, value) => {
+  const actualizarConcepto = (id, field, value) => {
     setConcepts(concepts.map(concept => 
       concept.id === id ? { ...concept, [field]: value } : concept
     ));
   };
 
-  const calculateresultados = () => {
+  const calcResultados = () => {
     const calculatedresultados = classifyAttendances(concepts, attendanceIn, attendanceOut);
     setRespuestas(calculatedresultados);
     setNotificacion("Cálculo realizado con éxito");
@@ -92,10 +92,10 @@ export default function AttendanceForm() {
   };
 
   useEffect(() => {
-    calculateresultados();
+    calcResultados();
   }, [concepts, attendanceIn, attendanceOut]);
 
-  const getColorClass = (hours) => {
+  const getColor = (hours) => {
     if (hours === 0) return "bg-gray-100";
     if (hours < 4) return "bg-blue-100";
     if (hours < 8) return "bg-green-100";
@@ -121,7 +121,7 @@ export default function AttendanceForm() {
             <input
               type="time"
               value={attendanceIn}
-              onChange={(e) => setAttendanceIn(e.target.value)}
+              onChange={(e) => setIngreso(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -130,7 +130,7 @@ export default function AttendanceForm() {
             <input
               type="time"
               value={attendanceOut}
-              onChange={(e) => setAttendanceOut(e.target.value)}
+              onChange={(e) => setSalida(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -145,7 +145,7 @@ export default function AttendanceForm() {
           </div>
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center transition-colors"
-            onClick={addConcept}
+            onClick={agregarConcepto}
           >
             <Plus size={16} className="mr-1" />
             Añadir Concepto
@@ -161,7 +161,7 @@ export default function AttendanceForm() {
                   <input
                     type="text"
                     value={concept.name}
-                    onChange={(e) => updateConcept(concept.id, 'name', e.target.value)}
+                    onChange={(e) => actualizarConcepto(concept.id, 'name', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -170,7 +170,7 @@ export default function AttendanceForm() {
                   <input
                     type="time"
                     value={concept.start}
-                    onChange={(e) => updateConcept(concept.id, 'start', e.target.value)}
+                    onChange={(e) => actualizarConcepto(concept.id, 'start', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -179,14 +179,14 @@ export default function AttendanceForm() {
                   <input
                     type="time"
                     value={concept.end}
-                    onChange={(e) => updateConcept(concept.id, 'end', e.target.value)}
+                    onChange={(e) => actualizarConcepto(concept.id, 'end', e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="flex justify-end">
                   <button 
                     className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors disabled:opacity-50"
-                    onClick={() => deleteConcept(concept.id)}
+                    onClick={() => borrarConcepto(concept.id)}
                     disabled={concepts.length <= 1}
                   >
                     <Trash2 size={20} />
@@ -201,13 +201,13 @@ export default function AttendanceForm() {
       <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
         <button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md flex items-center justify-center transition-colors"
-          onClick={calculateresultados}
+          onClick={calcResultados}
         >
           <RefreshCw size={18} className="mr-2" />
           Calcular Horas
         </button>
         
-        <button 
+        {/* <button 
           className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-md flex items-center justify-center transition-colors disabled:opacity-50"
           onClick={fetchApiData}
           disabled={cargando}
@@ -223,7 +223,7 @@ export default function AttendanceForm() {
               Actualizar Horas
             </>
           )}
-        </button>
+        </button> */}
       </div>
       
       {notificacion && (
@@ -246,7 +246,7 @@ export default function AttendanceForm() {
             {Object.entries(resultados).map(([conceptId, hours]) => {
               const concept = concepts.find(c => c.id === parseInt(conceptId));
               return concept ? (
-                <div key={conceptId} className={`${getColorClass(hours)} rounded-lg shadow p-4 transition-all hover:shadow-md`}>
+                <div key={conceptId} className={`${getColor(hours)} rounded-lg shadow p-4 transition-all hover:shadow-md`}>
                   <h3 className="font-bold text-gray-800 mb-1">{concept.name}</h3>
                   <div className="text-2xl font-bold text-center my-2 text-blue-800">{hours} horas</div>
                   <div className="text-sm text-gray-600 mt-2">
